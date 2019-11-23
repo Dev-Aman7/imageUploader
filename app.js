@@ -1,28 +1,31 @@
-var http = require('http');
+var express = require('express');
 var formidable = require('formidable');
-var fs = require('fs');
 
-http.createServer(function (req, res) {
-  if (req.url == '/fileupload') {
+var app = express();
+
+app.get('/', function (req, res){
+    res.sendFile(__dirname + '/index.html');
+});
+
+app.post('/', function (req, res){
     var form = new formidable.IncomingForm();
-    form.uploadDir='./uploadedfile';
-    form.keepExtensions=true;
-    form.multiples=true;
 
-    form.parse(req,(err,fields,files)=>{
-          if(err)
-          throw err;
-          res.write('ok');
-          res.end();
-    })
- }
-   else {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    res.write('<form action="fileupload" method="post" enctype="multipart/form-data">');
-    res.write('<input type="file" name="filetoupload"><br>');
-    res.write('<input type="file" name="filetoupload2"><br>');
-    res.write('<input type="submit">');
-    res.write('</form>');
-    return res.end();
-  }
-}).listen(3000);
+    form.parse(req);
+
+    form.on('fileBegin', function (name, file){
+        file.path = __dirname + '/uploadedfile/' + file.name;
+    });
+
+    form.on('file', function (name, file){
+        console.log('Uploaded ' + file.name);
+    });
+
+    res.sendFile(__dirname + '/index.html');
+});
+
+app.listen(3000,(err)=>{
+  if(err)
+  throw err;
+  else
+  console.log("server on 3000");
+});
