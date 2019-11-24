@@ -15,31 +15,37 @@ app.post('/',function (req, res){
     //for max file size in bytes
     form.maxFileSize=20*1024*1024;
 
+    // form.uploadDir="H:\\Projects\\image_uploader\\uploadedfile";
+
+    form.keepExtensions=true;
+
     //parse the req
     form.parse(req);
     
     form.on('error',(err)=>{
       res.send('error');
     });
-
     form.on('fileBegin', function (name, file){
       console.log(form.bytesExpected);
+      console.log(file.type);
+      s=file.type;
+      s=s.split('/')[0];
+      console.log("type "+s);
       if(form.bytesExpected<1024)
       {
+        console.log('file size less than a kb')
         res.sendFile(__dirname + '/index.html');
       }
-      else
+      else if(s!='image')
       {
-        //for the path of uplaoding file, can also use form.uploadDir
-        file.path = __dirname + '/uploadedfile/' + file.name;
+        console.log('file not supported')
+        res.send("file not supported");
       }
-      
-    });
-
-    form.on('file', function (name, file){
-        if(file.name)
-        console.log('Uploaded ' + file.name);
-        res.sendFile(__dirname + '/index.html');
+      else{
+        console.log('file saved')
+        file.path = __dirname + '/uploadedfile/' + file.name;
+        res.send('ok');
+      }
     });
 
     
